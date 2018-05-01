@@ -1,0 +1,12 @@
+Intent to Contribute
+
+
+TODO
+May 1, 2018
+    * order in tracks
+    * see if points that are close to the center are good seed points or not.
+    * port 2d, polar model to train on data
+        - format data
+            - seperate hit data into their respective tracks
+            - order the hits within a track  by 1st, 2nd, etc. hit
+            - 
