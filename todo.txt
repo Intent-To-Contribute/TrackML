@@ -2,9 +2,14 @@ Intent to Contribute
 
 
 TODO
+May 2, 2018...
+    * port actual data to toy model setup
+        - data formatting
+
+
 May 1, 2018
-    * order in tracks
-    * see if points that are close to the center are good seed points or not.
+    * ~order in tracks~ CHECK
+    * see if points that are close to the center are good seed points or not. CHECK
     * port 2d, polar model to train on data
         - format data
             - seperate hit data into their respective tracks

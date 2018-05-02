@@ -1,0 +1,82 @@
+[hit_id         3.916400e+04
+particle_id    4.504562e+15
+tx             1.103560e+02
+ty             6.534290e+01
+tz             5.980000e+02
+tpx            9.388410e-01
+tpy            5.144580e-01
+tpz            4.918030e+00
+weight         2.351190e-05
+Name: 39163, dtype: float64, hit_id         8.291500e+04
+particle_id    4.504562e+15
+tx             3.451530e+02
+ty             1.764430e+02
+tz             1.795500e+03
+tpx            9.817440e-01
+tpy            4.089510e-01
+tpz            4.914750e+00
+weight         1.094520e-05
+Name: 82914, dtype: float64, hit_id         8.500900e+04
+particle_id    4.504562e+15
+tx             4.957970e+02
+ty             2.376310e+02
+tz             2.548500e+03
+tpx            9.752860e-01
+tpy            4.030650e-01
+tpz            4.914670e+00
+weight         1.864730e-05
+Name: 85008, dtype: float64, hit_id         8.399200e+04
+particle_id    4.504562e+15
+tx             4.170890e+02
+ty             2.057050e+02
+tz             2.154500e+03
+tpx            9.857420e-01
+tpy            3.967330e-01
+tpz            4.913180e+00
+weight         1.256670e-05
+Name: 83991, dtype: float64, hit_id         8.596200e+04
+particle_id    4.504562e+15
+tx             5.747370e+02
+ty             2.713340e+02
+tz             2.948500e+03
+tpx            9.627860e-01
+tpy            4.242520e-01
+tpz            4.913870e+00
+weight         2.189040e-05
+Name: 85961, dtype: float64, hit_id         4.170600e+04
+particle_id    4.504562e+15
+tx             1.295020e+02
+ty             7.569910e+01
+tz             6.980000e+02
+tpx            9.440340e-01
+tpy            5.032850e-01
+tpz            4.917580e+00
+weight         1.945810e-05
+Name: 41705, dtype: float64, hit_id         8.047500e+04
+particle_id    4.504562e+15
+tx             2.301180e+02
+ty             1.259030e+02
+tz             1.215500e+03
+tpx            9.680900e-01
+tpy            4.544920e-01
+tpz            4.915140e+00
+weight         1.418820e-05
+Name: 80474, dtype: float64, hit_id         2.651800e+04
+particle_id    4.504562e+15
+tx             6.075040e+01
+ty             3.728280e+01
+tz             3.360170e+02
+tpx            9.232140e-01
+tpy            5.407260e-01
+tpz            4.919220e+00
+weight         2.999790e-05
+Name: 26517, dtype: float64, hit_id         8.174000e+04
+particle_id    4.504562e+15
+tx             2.854220e+02
+ty             1.509190e+02
+tz             1.495500e+03
+tpx            9.756000e-01
+tpy            4.278960e-01
+tpz            4.915140e+00
+weight         1.094520e-05
+Name: 81739, dtype: float64]
