@@ -1,4 +1,4 @@
 *.csv
 *.keras
 .DS_Store
-
+*.npy
