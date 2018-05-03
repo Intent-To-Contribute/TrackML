@@ -17,6 +17,8 @@ current_pid = -1
 if not os.path.exists("all_tracks.npy"):
     for i in range(len(sorted_truth)):
         line = sorted_truth.iloc[i]
+        if line[1] == 0:
+            continue
         if line[1] != current_pid:
             true_tracks.append(np.asarray(track))
             track = []
@@ -32,9 +34,13 @@ print("finished initializeing true_tracks")
 max_len = 0
 X = []
 Y = []
+
+# --- grabbing max(nhits) ---
 for track in true_tracks:
     if len(track) > max_len:
         max_len = len(track)
+
+# --- making input vectors ---
 for track in true_tracks:
     curr_idx = 0
     for i in range(max_len-1):
@@ -50,14 +56,7 @@ X = np.asarray(X)
 Y = np.asarray(Y)
 print(X.shape, Y.shape)
 
-# print(true_tracks)
-
 """
-x = np.array(x)
-y = np.array(y)
-
-print(x.shape)
-print(y.shape)
 
 import keras
 from keras.models import Sequential
