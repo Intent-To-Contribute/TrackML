@@ -10,7 +10,6 @@ import sys
 # =-=-=-=-=-=-=-- data -=-=-=-=-=-=-=-=-=-=-=-=-=-
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 hits, cells, particles, truth = load_event('../../Data/train_100_events/event000001052')
-pdb.set_trace()
 
 print(particles.iloc[0])
 print(len(particles))
@@ -49,15 +48,20 @@ for i in range(len(particles)):
 
 
 # 1d histograms
-n_bins = 10
-#n, bins, patches = plt.hist(p, n_bins, facecolor='g', alpha=0.5)
-#plt.show()
+print(len(vx))
+print(len(vy))
+
+n_bins = 1000
+n, bins, patches = plt.hist(vx, n_bins, facecolor='g', alpha=0.5)
+plt.show()
 
 
 # 2d histograms
-plt.hist2d(r, p, bins=n_bins, norm=LogNorm())
-plt.colorbar()
-plt.show()
+
+#n_bins = 10
+#plt.hist2d(r, p, bins=n_bins, norm=LogNorm())
+#plt.colorbar()
+#plt.show()
 
 
 
