@@ -1,4 +1,5 @@
 from trackml.dataset import load_event
+import pdb
 import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
@@ -9,6 +10,7 @@ import sys
 # =-=-=-=-=-=-=-- data -=-=-=-=-=-=-=-=-=-=-=-=-=-
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 hits, cells, particles, truth = load_event('../../Data/train_100_events/event000001052')
+pdb.set_trace()
 
 print(particles.iloc[0])
 print(len(particles))

@@ -9,6 +9,7 @@ dataframe = pd.read_csv('gen_data/2d_straight.full.csv', engine='python')
 
 dataset = dataframe.values
 
+hits, cells, particles, truth = load_event('../../Data/train_100_events/event000001052')
 # print (dataset[0:20,:].shape)
 # print (dataset[0:20,:])
 # print (dataset.reshape(10, 10, 4))
