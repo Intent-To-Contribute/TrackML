@@ -1,6 +1,6 @@
-*.csv
-*.keras
-.DS_Store
-*.npy
-*.pyc
+**/*.csv
+**/*.keras
+**/.DS_Store
+**/*.npy
+**/*.pyc
 
