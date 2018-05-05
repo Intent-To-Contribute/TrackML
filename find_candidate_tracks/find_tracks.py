@@ -98,6 +98,7 @@ else:
     y = np.load("guesses.npy")
 
 def find_nearest_hit(hits, guess):
+    # if there are nearby hits
     min_dist = sys.maxsize
     closest_hit = hits[0]
     for hit in hits:
@@ -108,11 +109,28 @@ def find_nearest_hit(hits, guess):
     return closest_hit
 
 
+def scan_voxels_for_hits(voxels, n, i, j, k):
+    window = 1
+    high = window + 1
+    possible_nearest_hits = []
+    while len(possible_nearest_hits) == 0:
+        high = window + 1
+        for ii in range(max(0,i-window), min(i+high,n+1)):
+            for jj in range(max(0,j-window), min(j+high,n+1)):
+                for kk in range(max(0,k-window), min(k+high,n+1)):
+                    if voxels[ii][jj][kk] != 0:
+                        for hit in voxels[ii][jj][kk]:
+                            possible_nearest_hits.append(hit)
+        window += 1
+    return np.asarray(possible_nearest_hits)
+    
+
+
 # create voxelized hits
 xRange = xMax - xMin
 yRange = yMax - yMin
 zRange = zMax - zMin
-n = 100
+n = 150
 voxels = np.zeros((n+1,n+1,n+1), dtype=object)
 
 for hit in hits:
@@ -148,20 +166,13 @@ for guess in y:
     i = int(n * ((xHit - xMin) / xRange))
     j = int(n * ((yHit - yMin) / yRange))
     k = int(n * ((zHit - zMin) / zRange))
-
-    possible_nearest_hits = []
-    for ii in range(min(0,i-1), max(i+2,n+1)):
-        for jj in range(min(0,j-1), max(j+2,n+1)):
-            for kk in range(min(0,k-1), max(k+2,n+1)):
-                print(voxels[ii][jj][kk])
-                if voxels[ii][jj][kk] != 0:
-                    possible_nearest_hits.append(voxels[ii][jj][kk])
-                    pdb.set_trace()
-
-    print(possible_nearest_hits.shape)
+    
+    possible_nearest_hits = scan_voxels_for_hits(voxels, n, i, j, k)
     next_hit = find_nearest_hit(possible_nearest_hits, guess)
     next_hits.append(next_hit)
-    print(str(counter) + "/" + str(len(y)))
+    if (counter % 500) == 0:
+        print(str(counter) + "/" + str(len(y)))
+        print(possible_nearest_hits.shape)
     counter += 1
 
 print(next_hits)
