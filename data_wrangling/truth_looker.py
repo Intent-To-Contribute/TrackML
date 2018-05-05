@@ -48,11 +48,8 @@ for i in range(len(particles)):
 
 
 # 1d histograms
-print(len(vx))
-print(len(vy))
-
 n_bins = 1000
-n, bins, patches = plt.hist(vx, n_bins, facecolor='g', alpha=0.5)
+n, bins, patches = plt.hist(vy, n_bins, facecolor='g', alpha=0.5)
 plt.show()
 
 
