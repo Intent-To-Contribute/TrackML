@@ -60,14 +60,11 @@ for track in true_tracks:
     for i in range(1, max_len):
         x_hit = np.zeros((max_len, 3))
 
-        if i < len(track):
+        if i < len(track)-1:
             for z in range(i):
                 x_hit[max_len-i+z] = track[z][2:5]
             X.append(x_hit)
-            if i == len(track)-1:
-                Y.append(np.asarray([0, 0, 0, 1]))
-            else:
-                Y.append(np.append(track[i+1][2:5], [0]))
+            Y.append(np.append(track[i+1][2:5], [0]))
 
 
 X = np.asarray(X)

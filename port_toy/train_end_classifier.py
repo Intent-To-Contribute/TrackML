@@ -65,9 +65,9 @@ for track in true_tracks:
                 x_hit[max_len-i+z] = track[z][2:5]
             final_class_X.append(x_hit)
             if i == len(track)-1:
-                final_class_Y.append(np.asarray([1]))
+                final_class_Y.append(np.asarray([1, 1]))
             else:
-                final_class_Y.append(np.asarray([0]))
+                final_class_Y.append(np.asarray([0, 1]))
 
 
 final_class_X = np.asarray(final_class_X)
@@ -89,15 +89,15 @@ from keras.models import load_model
 
 seq_len = max_len
 in_neurons = 3
-out_neurons = 1
+out_neurons = 2
 hidden_neurons = 500
 
 model = Sequential()
 model.add(LSTM(hidden_neurons, return_sequences=False,
                 input_shape=(seq_len, in_neurons)))
 model.add(Dense(out_neurons, input_dim=hidden_neurons))
-model.add(Activation("linear"))
-model.compile(loss="mean_squared_error", optimizer="rmsprop")
+model.add(Activation("softmax"))
+model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
 
 print(model.summary())
 
