@@ -53,18 +53,22 @@ for track in true_tracks:
     if len(track) > max_len:
         max_len = len(track)
 
+print(max_len)
+
 # --- making input vectors ---
 for track in true_tracks:
-    curr_idx = 0
-    for i in range(1, max_len-1):
+    for i in range(1, max_len):
         x_hit = np.zeros((max_len, 3))
-        if i < len(track)-1:
+
+        if i < len(track):
             for z in range(i):
                 x_hit[max_len-i+z] = track[z][2:5]
             X.append(x_hit)
-            # Y.append(track[i+1][2:8])
-            Y.append(track[i+1][2:5])
-        
+            if i == len(track)-1:
+                Y.append(np.asarray([0, 0, 0, 1]))
+            else:
+                Y.append(np.append(track[i+1][2:5], [0]))
+
 
 X = np.asarray(X)
 Y = np.asarray(Y)
@@ -85,7 +89,7 @@ from keras.models import load_model
 
 seq_len = max_len
 in_neurons = 3
-out_neurons = 3
+out_neurons = 4
 hidden_neurons = 500
 
 model = Sequential()
@@ -98,8 +102,8 @@ model.compile(loss="mean_squared_error", optimizer="rmsprop")
 print(model.summary())
 
 
-if os.path.exists("model.keras"):
-    model = load_model("model.keras")
+# if os.path.exists("model.keras"):
+    # model = load_model("model.keras")
 
 model.fit(X, Y, batch_size=2000, epochs=1, validation_split=0.05)
 model.save("model.keras")

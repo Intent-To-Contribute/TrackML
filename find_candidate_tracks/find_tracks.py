@@ -1,13 +1,183 @@
+from utils import find_nearest_hit, scan_voxels_for_hits
 import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from trackml.dataset import load_event
+from trackml.score import score_event
 import pdb
+import pandas as pd
+import csv
 
 ### load data ###
 hits, cells, particles, truth = load_event('../../Data/train_100_events/event000001052')
 true_tracks = np.load("../port_toy/all_tracks.npy")
+
+#for event_id, hits, cells, particles, truth in load_dataset('path/to/dataset'):
+#score = score_event(truth, shuffled)
+
+
+
+## find min/max of x,y,z ##
+xMax = -sys.maxsize
+yMax = -sys.maxsize
+zMax = -sys.maxsize
+xMin = sys.maxsize
+yMin = sys.maxsize
+zMin = sys.maxsize
+for track in true_tracks:
+	for hit in track:
+		if (xMax < hit[2]): xMax = hit[2]
+		if (yMax < hit[3]): yMax = hit[3]
+		if (zMax < hit[4]): zMax = hit[4]
+		if (xMin > hit[2]): xMin = hit[2]
+		if (yMin > hit[3]): yMin = hit[3]
+		if (zMin > hit[4]): zMin = hit[4]
+
+## creating voxels ##
+hits = np.asarray(hits)
+xRange = xMax - xMin
+yRange = yMax - yMin
+zRange = zMax - zMin
+n = 150
+voxels = np.zeros((n+1,n+1,n+1), dtype=object)
+
+for hit in hits:
+    xHit = hit[1]
+    yHit = hit[2]
+    zHit = hit[3]
+    i = int(n * ((xHit - xMin) / xRange))
+    j = int(n * ((yHit - yMin) / yRange))
+    k = int(n * ((zHit - zMin) / zRange))
+    if voxels[i][j][k] == 0:
+        voxels[i][j][k] = []
+    voxels[i][j][k].append(hit)
+
+print("finished creating voxels")
+
+### seeds ###
+import csv
+
+seed_file = open("SeedCandidates.txt", "r")
+our_tracks = []
+seed_hits = []
+for seed_id in seed_file:
+    seed_id = int(float(seed_id.strip()))
+    seed_hit = hits[hits[:,0] == seed_id][0]
+    our_tracks.append([int(seed_hit[0])])
+    seed_hits.append(seed_hit[1:4])
+
+# print(our_tracks)
+print("starting with " + str(len(seed_hits)) + " seed hits")
+
+x = []
+for seed_hit in seed_hits:
+	input_vector = np.zeros((18, 3))
+	input_vector[17] = seed_hit
+	x.append(input_vector)
+
+## predict the next point ##
+import tensorflow as tensorflow
+import keras
+from keras.models import load_model
+    
+x = np.asarray(x)
+model = load_model("3in_3out.keras")
+print(model.summary())
+if not os.path.exists("guesses_2.npy"):
+    y = model.predict(x)
+    print("finished predicting next hits")
+    np.save("guesses_2.npy", y)
+else:
+    y = np.load("guesses_2.npy")
+
+
+## for each prediction, find the closest hit to it ##
+next_hits = []
+counter = 0
+for guess in y:    
+    xHit = guess[0]
+    yHit = guess[1]
+    zHit = guess[2]
+    i = int(n * ((xHit - xMin) / xRange))
+    j = int(n * ((yHit - yMin) / yRange))
+    k = int(n * ((zHit - zMin) / zRange))
+    
+    possible_nearest_hits = scan_voxels_for_hits(voxels, n, i, j, k)
+    next_hit = find_nearest_hit(possible_nearest_hits, guess)
+    next_hits.append(next_hit)
+    if (counter % 1000) == 0:
+        print(str(counter) + "/" + str(len(y)))
+        print(possible_nearest_hits.shape)
+    counter += 1
+
+print("finished finding closest hits to predictions")
+
+
+for i in range(17):    
+#for i in range(1):    
+    new_x = []
+    for j in range(len(x)):
+        input_vector = np.zeros((18, 3))
+        for k in range(1, 17):
+            input_vector[k] = x[j][k+1]
+        our_tracks[j].append(int(next_hits[j][0]))
+        input_vector[17] = next_hits[j][1:4]
+        new_x.append(input_vector)
+
+    ## predict the next point ##
+    print("predicting next hits " + str(i))
+    x = new_x
+    x = np.asarray(x)
+    y = model.predict(x)
+    print("finished predicting next hits " + str(i))
+
+
+    ## for each prediction, find the closest hit to it ##
+    print("finding closest hits to predictions " + str(i))
+    next_hits = []
+    counter = 0
+    for guess in y:    
+        xHit = guess[0]
+        yHit = guess[1]
+        zHit = guess[2]
+        ii = int(n * ((xHit - xMin) / xRange))
+        j = int(n * ((yHit - yMin) / yRange))
+        k = int(n * ((zHit - zMin) / zRange))
+        
+        possible_nearest_hits = scan_voxels_for_hits(voxels, n, ii, j, k)
+        next_hit = find_nearest_hit(possible_nearest_hits, guess)
+        next_hits.append(next_hit)
+        if (counter % 1000) == 0:
+            print(str(counter) + "/" + str(len(y)))
+            print(possible_nearest_hits.shape)
+        counter += 1
+
+    print("finished finding closest hits to predictions " + str(i))
+
+
+## format data into tracks ##
+
+print(our_tracks)
+submission = []
+for i in range(len(our_tracks)):
+    for hit in our_tracks[i]:
+        submission.append([hit, i])
+
+print(submission)
+np.save("submission_1052.npy", np.asarray(submission))
+df = pd.DataFrame(np.asarray(submission), columns = ["hit_id", "track_id"])
+print(df.head())
+
+
+score = score_event(truth, df)
+print(score)
+
+
+
+
+
+## old code ##
 
 ### track lengths ###
 # lengths = np.zeros(20)
@@ -46,105 +216,7 @@ true_tracks = np.load("../port_toy/all_tracks.npy")
 
 ### hits ###
 #hits = []
-xMax = -sys.maxsize
-yMax = -sys.maxsize
-zMax = -sys.maxsize
-xMin = sys.maxsize
-yMin = sys.maxsize
-zMin = sys.maxsize
-for track in true_tracks:
-	for hit in track:
-		if (xMax < hit[2]): xMax = hit[2]
-		if (yMax < hit[3]): yMax = hit[3]
-		if (zMax < hit[4]): zMax = hit[4]
-		if (xMin > hit[2]): xMin = hit[2]
-		if (yMin > hit[3]): yMin = hit[3]
-		if (zMin > hit[4]): zMin = hit[4]
-#		hits.append(hit)
 
-### seeds ###
-import csv
-
-seed_file = open("SeedCandidates.txt", "r")
-seed_hits = []
-hits = np.asarray(hits)
-for seed_id in seed_file:
-	seed_id = int(float(seed_id.strip()))
-	seed_hit = hits[hits[:,0] == seed_id][0]
-	seed_hits.append(seed_hit[1:4])
-
-print(len(seed_hits))
-
-x = []
-for seed_hit in seed_hits:
-	input_vector = np.zeros((18, 3))
-	input_vector[17] = seed_hit
-	x.append(input_vector)
-
-x = np.asarray(x)
-if not os.path.exists("guesses.npy"):
-    import tensorflow as tensorflow
-    import keras
-    from keras.models import load_model
-
-   ## use the model ###
-    model = load_model("3in_3out.keras")
-    print(model.summary())
-
-    y = model.predict(x)
-    print(y)
-    np.save("guesses.npy", y)
-else:
-    y = np.load("guesses.npy")
-
-def find_nearest_hit(hits, guess):
-    # if there are nearby hits
-    min_dist = sys.maxsize
-    closest_hit = hits[0]
-    for hit in hits:
-        dist = np.linalg.norm(np.subtract(hit[1:4], guess))
-        if dist < min_dist:
-            min_dist = dist
-            closest_hit = hit
-    return closest_hit
-
-
-def scan_voxels_for_hits(voxels, n, i, j, k):
-    window = 1
-    high = window + 1
-    possible_nearest_hits = []
-    while len(possible_nearest_hits) == 0:
-        high = window + 1
-        for ii in range(max(0,i-window), min(i+high,n+1)):
-            for jj in range(max(0,j-window), min(j+high,n+1)):
-                for kk in range(max(0,k-window), min(k+high,n+1)):
-                    if voxels[ii][jj][kk] != 0:
-                        for hit in voxels[ii][jj][kk]:
-                            possible_nearest_hits.append(hit)
-        window += 1
-    return np.asarray(possible_nearest_hits)
-    
-
-
-# create voxelized hits
-xRange = xMax - xMin
-yRange = yMax - yMin
-zRange = zMax - zMin
-n = 150
-voxels = np.zeros((n+1,n+1,n+1), dtype=object)
-
-for hit in hits:
-    xHit = hit[1]
-    yHit = hit[2]
-    zHit = hit[3]
-    i = int(n * ((xHit - xMin) / xRange))
-    j = int(n * ((yHit - yMin) / yRange))
-    k = int(n * ((zHit - zMin) / zRange))
-    if voxels[i][j][k] == 0:
-        voxels[i][j][k] = []
-    voxels[i][j][k].append(hit)
-
-print(voxels)
 
 #hit = hits[5]
 #xHit = hit[1]
@@ -156,25 +228,3 @@ print(voxels)
 #
 #print(voxels[i][j][k])
 #print(len(voxels[i][j][k]))
-
-next_hits = []
-counter = 0
-for guess in y:    
-    xHit = guess[0]
-    yHit = guess[1]
-    zHit = guess[2]
-    i = int(n * ((xHit - xMin) / xRange))
-    j = int(n * ((yHit - yMin) / yRange))
-    k = int(n * ((zHit - zMin) / zRange))
-    
-    possible_nearest_hits = scan_voxels_for_hits(voxels, n, i, j, k)
-    next_hit = find_nearest_hit(possible_nearest_hits, guess)
-    next_hits.append(next_hit)
-    if (counter % 500) == 0:
-        print(str(counter) + "/" + str(len(y)))
-        print(possible_nearest_hits.shape)
-    counter += 1
-
-print(next_hits)
-
-
