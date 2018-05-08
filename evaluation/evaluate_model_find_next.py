@@ -67,9 +67,28 @@ for seed_id in seed_file:
     our_tracks.append([int(seed_hit[0])])
     seed_hits.append(seed_hit)
 
-# print(our_tracks)
 print("starting with " + str(len(seed_hits)) + " seed hits")
 
+## evaluate seed finding ##
+true_seed_ids = []
+for track in true_tracks:
+    true_seed_ids.append(track[0][0])
+
+seed_ids = []
+for seed_hit in seed_hits:
+    seed_ids.append(seed_hit[0])
+
+found_seeds = np.isin(seed_ids, true_seed_ids)
+num_seeds_found = np.count_nonzero(found_seeds)
+num_seeds_guessed = len(seed_hits)
+num_real_seeds = len(true_seed_ids)
+
+print(num_seeds_found, "/", num_real_seeds, " seeds found with", num_seeds_guessed, "predicted.")
+print("recall", num_seeds_found / num_real_seeds)
+print("precision", num_seeds_found / num_seeds_guessed)
+
+
+## build input vectors ##
 x = []
 for seed_hit in seed_hits:
 	input_vector = np.zeros((18, 3))
@@ -115,27 +134,6 @@ for guess in y:
     counter += 1
 
 print("finished finding closest hits to predictions")
-
-## evaluate seed finding ##
-true_seed_ids = []
-for track in true_tracks:
-    true_seed_ids.append(track[0][0])
-
-seed_ids = []
-for seed_hit in seed_hits:
-    seed_ids.append(seed_hit[0])
-
-found_seeds = np.isin(seed_ids, true_seed_ids)
-num_seeds_found = np.count_nonzero(found_seeds)
-num_seeds_guessed = len(seed_hits)
-num_real_seeds = len(true_seed_ids)
-
-print(num_seeds_found, "/", num_real_seeds, " seeds found with", num_seeds_guessed, "predicted.")
-print("recall", num_seeds_found / num_real_seeds)
-print("precision", num_seeds_found / num_seeds_guessed)
-
-
-## evaluate next steps ##
 
 
 # for i in range(17):    
