@@ -9,17 +9,15 @@ import pdb
 import pandas as pd
 import csv
 
-### load data ###
-hits, cells, particles, truth = load_event('../../Data/train_100_events/event000001052')
+## Load Data ##
+path_to_dataset = "../../Data/train_100_events/"
+event_path = "event000001052"
 
+hits, cells, particles, truth = load_event(path_to_dataset + event_path)
 true_tracks = np.load("../port_toy/all_tracks.npy")
 
-# for event_id, hits, cells, particles, truth in load_dataset('path/to/dataset'):
-#score = score_event(truth, shuffled)
-
-
-
-## find min/max of x,y,z ##
+## Create Voxels ##
+# find min/max of x,y,z
 xMax = -sys.maxsize
 yMax = -sys.maxsize
 zMax = -sys.maxsize
@@ -27,15 +25,14 @@ xMin = sys.maxsize
 yMin = sys.maxsize
 zMin = sys.maxsize
 for track in true_tracks:
-	for hit in track:
-		if (xMax < hit[2]): xMax = hit[2]
-		if (yMax < hit[3]): yMax = hit[3]
-		if (zMax < hit[4]): zMax = hit[4]
-		if (xMin > hit[2]): xMin = hit[2]
-		if (yMin > hit[3]): yMin = hit[3]
-		if (zMin > hit[4]): zMin = hit[4]
+    for hit in track:
+        if (xMax < hit[2]): xMax = hit[2]
+        if (yMax < hit[3]): yMax = hit[3]
+        if (zMax < hit[4]): zMax = hit[4]
+        if (xMin > hit[2]): xMin = hit[2]
+        if (yMin > hit[3]): yMin = hit[3]
+        if (zMin > hit[4]): zMin = hit[4]
 
-## creating voxels ##
 hits = np.asarray(hits)
 xRange = xMax - xMin
 yRange = yMax - yMin
@@ -56,8 +53,7 @@ for hit in hits:
 
 print("finished creating voxels")
 
-
-### seeds ###
+## Load Predicted Seeds ##
 seed_file = open("SeedCandidates.txt", "r")
 our_tracks = []
 seed_hits = []
@@ -67,9 +63,10 @@ for seed_id in seed_file:
     our_tracks.append([int(seed_hit[0])])
     seed_hits.append(seed_hit)
 
+print()
 print("starting with " + str(len(seed_hits)) + " seed hits")
 
-## evaluate seed finding ##
+## Evaluate Predicted Seeds ##
 true_seed_ids = []
 for track in true_tracks:
     true_seed_ids.append(track[0][0])
@@ -86,136 +83,73 @@ num_real_seeds = len(true_seed_ids)
 print(num_seeds_found, "/", num_real_seeds, " seeds found with", num_seeds_guessed, "predicted.")
 print("recall", num_seeds_found / num_real_seeds)
 print("precision", num_seeds_found / num_seeds_guessed)
+print()
 
-
-## build input vectors ##
-x = []
-for seed_hit in seed_hits:
-	input_vector = np.zeros((18, 3))
-	input_vector[17] = seed_hit[1:4]
-	x.append(input_vector)
-
-## predict the next point ##
+## Import Model ##
 import tensorflow as tensorflow
 import keras
 from keras.models import load_model
 
-## Import the stopping model
-stopping_model = load_model("final_classifier.keras")
-    
-x = np.asarray(x)
 model = load_model("3in_3out.keras")
 print(model.summary())
-if not os.path.exists("guesses_2.npy"):
+
+## Evaluate Predictions ##
+max_len = 18
+for i in range(1, max_len):
+    # print("Evaluating Hit #%d..." % (i+1))
+    x = []
+    true_hits = []
+    for track in true_tracks:
+        x_hit = np.zeros((max_len, 3))
+
+        if i < len(track)-1:
+            for z in range(i):
+                x_hit[max_len-i+z] = track[z][2:5]
+            x.append(x_hit)
+            true_hits.append(track[i])
+    
+    if (len(x) == 0): break
+    x = np.asarray(x)
+
     y = model.predict(x)
-    print("finished predicting next hits")
-    np.save("guesses_2.npy", y)
-else:
-    y = np.load("guesses_2.npy")
+    # print("Finished predicting hits")
 
-
-## for each prediction, find the closest hit to it ##
-next_hits = []
-counter = 0
-for guess in y:    
-    xHit = guess[0]
-    yHit = guess[1]
-    zHit = guess[2]
-    i = int(n * ((xHit - xMin) / xRange))
-    j = int(n * ((yHit - yMin) / yRange))
-    k = int(n * ((zHit - zMin) / zRange))
-    
-    possible_nearest_hits = scan_voxels_for_hits(voxels, n, i, j, k)
-    next_hit = find_nearest_hit(possible_nearest_hits, guess)
-    next_hits.append(next_hit)
-    if (counter % 1000) == 0:
-        print(str(counter) + "/" + str(len(y)))
-        print(possible_nearest_hits.shape)
-    counter += 1
-
-print("finished finding closest hits to predictions")
-
-
-# for i in range(17):    
-# #for i in range(1):    
-#     new_x = []
-#     for j in range(len(x)):
-#         input_vector = np.zeros((18, 3))
-#         for k in range(1, 17):
-#             input_vector[k] = x[j][k+1]
-#         # our_tracks[j].append(int(next_hits[j][0]))
-#         input_vector[17] = next_hits[j][1:4]
-#         new_x.append(input_vector)
-
-#     ## decide if this is the end or not ##
-#     stop_predictions = stopping_model.predict(np.asarray(new_x))
-#     stop_predictions = np.argmax(stop_predictions, axis=1)
-#     print(np.count_nonzero(stop_predictions))
-    
-#     ## if predicted to have stopped, then add to our_tracks
-    
-#     ## if predicted to not have stopped, then continue along the pipeline 
-#     new_x = np.asarray(new_x)
-#     print("value of 1", stop_predictions[stop_predictions[:] == 1])
-#     print("value of 0", stop_predictions[stop_predictions[:] == 0])
-#     print("shapes", np.asarray(new_x).shape, stop_predictions.shape)
-#     print("continue with these sequences", new_x[stop_predictions[:] == 1])
-#     print("these sequences have sToPPeD", new_x[stop_predictions[:] == 0])
-#     finished_tracks = new_x[stop_predictions[:] == 0]
-#     pdb.set_trace()
-
-#     our_tracks = np.concatenate(np.asarray(our_tracks), finished_tracks)
-#     new_x = new_x[stop_predictions[:] == 1]
-
-#     print("-" * 35)
-#     print("our_tracks", our_tracks, our_tracks.shape)
-#     print("new_x", new_x, new_x.shape)
-#     print("-" * 35)
-
-#     ## predict the next point ##
-#     print("predicting next hits " + str(i))
-#     x = new_x
-#     x = np.asarray(x)
-#     y = model.predict(x)
-#     print("finished predicting next hits " + str(i))
-
-
-#     ## for each prediction, find the closest hit to it ##
-#     print("finding closest hits to predictions " + str(i))
-#     next_hits = []
-#     counter = 0
-#     for guess in y:    
-#         xHit = guess[0]
-#         yHit = guess[1]
-#         zHit = guess[2]
-#         ii = int(n * ((xHit - xMin) / xRange))
-#         j = int(n * ((yHit - yMin) / yRange))
-#         k = int(n * ((zHit - zMin) / zRange))
+    predicted_hits = []
+    counter = 0
+    for guess in y:    
+        xHit = guess[0]
+        yHit = guess[1]
+        zHit = guess[2]
+        ii = int(n * ((xHit - xMin) / xRange))
+        j = int(n * ((yHit - yMin) / yRange))
+        k = int(n * ((zHit - zMin) / zRange))
         
-#         possible_nearest_hits = scan_voxels_for_hits(voxels, n, ii, j, k)
-#         next_hit = find_nearest_hit(possible_nearest_hits, guess)
-#         next_hits.append(next_hit)
-#         if (counter % 1000) == 0:
-#             print(str(counter) + "/" + str(len(y)))
-#             print(possible_nearest_hits.shape)
-#         counter += 1
+        possible_nearest_hits = scan_voxels_for_hits(voxels, n, ii, j, k)
+        hit = find_nearest_hit(possible_nearest_hits, guess)
+        predicted_hits.append(hit)
+        # if (counter % 5000) == 0:
+        #     print(str(counter) + "/" + str(len(y)))
+        #     print(possible_nearest_hits.shape)
+        counter += 1
 
-#     print("finished finding closest hits to predictions " + str(i))
+    # print("Finished finding closest hits to predictions")
+    predicted_hits = np.asarray(predicted_hits)
+    # print(predicted_hits.shape)
 
+    true_ids = []
+    for hit in true_hits:
+        true_ids.append(hit[0])
+    true_ids = np.asarray(true_ids)
 
-# ## format data into tracks ##
+    predicted_ids = []
+    for hit in predicted_hits:
+        predicted_ids.append(hit[0])
+    predicted_ids = np.asarray(predicted_ids)
 
-# print(our_tracks)
-# submission = []
-# for i in range(len(our_tracks)):
-#     for hit in our_tracks[i]:
-#         submission.append([hit, i])
+    found = np.equal(predicted_ids, true_ids)
 
-# print(submission)
-# np.save("submission_1052.npy", np.asarray(submission))
-# df = pd.DataFrame(np.asarray(submission), columns = ["hit_id", "track_id"])
-# print(df.head())
+    num_true_found = np.count_nonzero(found)
+    num_true = len(true_ids)
 
+    print("%.4f%% accuracy for hit #%d" % (100*num_true_found / num_true, i+1))
 
-# score = score_event(truth, df)
-# print(score)

@@ -43,19 +43,25 @@ else:
 
 
 first_hit_norms = []
-non_first_hit_norms = []
+non_first_or_second_hit_norms = []
+second_hit_norms = []
 for track in sorted_tracks:
     first_hit_norms.append(np.linalg.norm(track[0][2:4]))    
-    for truth_hit in track[1:]:
-        non_first_hit_norms.append(np.linalg.norm(truth_hit[2:4]))
+    if (len(track) > 1): second_hit_norms.append(np.linalg.norm(track[1][2:4]))
+    for truth_hit in track[2:]:
+        non_first_or_second_hit_norms.append(np.linalg.norm(truth_hit[2:4]))
+    # for truth_hit in track[1:]:
+        # non_first_hit_norms.append(np.linalg.norm(truth_hit[2:4]))
 
 from matplotlib import pyplot
 import numpy as np
 
-bins = np.linspace(25, 80, 55)
+bins = np.linspace(25, 200, 50)
 
 
-pyplot.hist([first_hit_norms, non_first_hit_norms], bins, label=['first hits', 'non-first hits'])
+# pyplot.hist([first_hit_norms, non_first_hit_norms], bins, label=['first hits', 'non-first hits'])
+# pyplot.yscale('log', nonposy='clip')
+pyplot.hist([first_hit_norms, second_hit_norms, non_first_or_second_hit_norms], bins, stacked=True, label=['first hits', 'second hits', 'non first or second hits'])
 pyplot.legend(loc='upper right')
 pyplot.title("xy-norms")
 pyplot.show()
