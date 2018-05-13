@@ -82,3 +82,13 @@ def standard(hits):
 	hits[['1_ss', '2_ss', '3_ss']] = ss.fit_transform(hits[['1_ss', '2_ss', '3_ss']].values)
 	X = ss.fit_transform(hits[['1_ss', '2_ss', '3_ss']].values)
 	return X
+
+def identity(hits):
+	x = hits.x.values
+	y = hits.y.values
+	z = hits.z.values
+
+	hits['1_id'] = x
+	hits['2_id'] = y
+	hits['3_id'] = z
+
