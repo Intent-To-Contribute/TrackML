@@ -225,19 +225,21 @@ else:
         out_neurons = seq_len
         hidden_neurons = 500
 
-        model = Sequential()
-        model.add(LSTM(hidden_neurons, return_sequences=False,
-                        input_shape=(None, in_neurons)))
-        model.add(Dense(out_neurons, input_dim=hidden_neurons))
-        model.add(Activation("linear"))
-        model.compile(loss="mean_squared_error", optimizer="rmsprop")
-        # print(model.summary())
 
-
-        # if os.path.exists("model.keras"):
-            # model = load_model("model.keras")
+        # load the model if it exists
+        if os.path.exists(transform + ".keras"):
+            model = load_model(transform + ".keras")
+        else:
+            model = Sequential()
+            model.add(LSTM(hidden_neurons, return_sequences=False,
+                            input_shape=(None, in_neurons)))
+            model.add(Dense(out_neurons, input_dim=hidden_neurons))
+            model.add(Activation("linear"))
+            model.compile(loss="mean_squared_error", optimizer="rmsprop")
+            # print(model.summary())
 
         ## Train the LSTM model ##
+        print("Training with the", transform, "tranformation")
         model.fit(X, Y, batch_size=2000, epochs=1, validation_split=0.05)
         model.save(transform + ".keras")
 
