@@ -57,8 +57,7 @@ if not os.path.exists("true_tracks.npy") or not os.path.exists("hit_tracks.npy")
     track = []
     for i in range(len(sorted_truth)):
         truth = np.asarray(sorted_truth.iloc[i])
-        if truth[1] == 0:
-            continue
+        if truth[1] == 0: continue
         if truth[1] != current_pid and current_pid != -1:
             current_pid = truth[1]
             if len(track) == 0: continue
@@ -72,7 +71,7 @@ if not os.path.exists("true_tracks.npy") or not os.path.exists("hit_tracks.npy")
             hitIDs = track[track[:,9].argsort()][:, 0]
             hit_track = []
             for hitID in hitIDs:
-                hit_track.append(np_hits[int(hitID)])
+                hit_track.append(np_hits[int(hitID)-1])
             hit_tracks.append(hit_track)
 
             track = []
