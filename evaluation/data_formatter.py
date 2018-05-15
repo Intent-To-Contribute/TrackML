@@ -39,7 +39,7 @@ class DataFormatter:
 
         print("\rSort tracks... 100%", end="")
         print("\n", end="")
-        return true_tracks, hit_tracks, max_len-1
+        return true_tracks, hit_tracks, max_len
 
     def getInputOutput(self, tracks, minLength=-sys.maxsize, maxLength=sys.maxsize):
         x = []

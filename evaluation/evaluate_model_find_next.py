@@ -31,7 +31,7 @@ hits, cells, particles, truth = load_event(path_to_dataset + event_path)
 # Get the sorted tracks
 formatter = DataFormatter()
 true_tracks, hit_tracks, max_len = formatter.getSortedTracks(particles, truth, hits)
-print("Max length:", max_len)
+print("Max length of a track:", max_len)
 
 
 ## Create Voxels ##
@@ -42,9 +42,9 @@ model = load_model(model_name)
 # print(model.summary())
 
 ## Evaluate Predictions ##
-for i in range(3, max_len):
+for i in range(3, max_len-1):
     x, y = formatter.getInputOutput(true_tracks, i, i)
-    print("\nBatch size for hit #%d:" % (i+1), x.shape[0])
+    print("\nBatch size for predicting hit #%d:" % (i+1), x.shape[0])
     
     if (len(x) == 0): break
     print("Find predictions... ", end="")
@@ -63,16 +63,9 @@ for i in range(3, max_len):
     print("\rFind closest hits... 100% complete")
     predicted_hits = np.asarray(predicted_hits)
 
+    true_ids = y[:,0]
+    predicted_ids = predicted_hits[:,0]
 
-    true_ids = []
-    for hit in y:
-        true_ids.append(hit[0])
-    true_ids = np.asarray(true_ids)
-
-    predicted_ids = []
-    for prediction in predicted_hits:
-        predicted_ids.append(prediction[0])
-    predicted_ids = np.asarray(predicted_ids)
     print("Unique ids predicted:", np.unique(predicted_ids).shape[0])
 
     found = np.equal(predicted_ids, true_ids)
