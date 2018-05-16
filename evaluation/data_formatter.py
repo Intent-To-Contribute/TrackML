@@ -25,9 +25,8 @@ class DataFormatter:
             if particle_id == 0: continue
             if len(true_track) < 4: continue
             if len(true_track) > max_len: max_len = len(true_track)
-            vertex = np_particles[np_particles[:,0] == particle_id][0][1:4]
 
-            # vertex = particle[1:4]
+            vertex = np_particles[np_particles[:,0] == particle_id][0][1:4]
             np_true_track = true_track.values
             t_points = np_true_track[:,2:5]
             dists = np.transpose([np.linalg.norm(vertex-t_points, axis=1)])
@@ -41,7 +40,7 @@ class DataFormatter:
         print("\n", end="")
         return true_tracks, hit_tracks, max_len
 
-    def getInputOutput(self, tracks, minLength=-sys.maxsize, maxLength=sys.maxsize):
+    def getInputOutput(self, tracks, minLength=-sys.maxsize, maxLength=sys.maxsize, paddingLength=None):
         x = []
         y = []
         for track in tracks:
@@ -51,11 +50,11 @@ class DataFormatter:
                     hit_to_add = np.asarray(track[z][2:5]).reshape(1,3)
                     x_hit = np.concatenate((x_hit, hit_to_add))
                 x.append(x_hit)
-                y.append(track[i+1][2:5])
+                y.append(track[i+1])
         
         if (len(x) == 0): return np.empty(0), np.empty(0)
         from keras.preprocessing.sequence import pad_sequences
-        x = pad_sequences(x, maxlen=None, dtype=np.float64)
+        x = pad_sequences(x, maxlen=paddingLength, dtype=np.float64)
         y = np.asarray(y)
 
         return x, y

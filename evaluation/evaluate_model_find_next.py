@@ -1,14 +1,8 @@
-# import os
-import sys, math
+import sys, os, math
 import numpy as np
-# import matplotlib.pyplot as plt
 from trackml.dataset import load_event
 from trackml.score import score_event
-# import pdb
-# import pandas as pd
-# import csv
 
-# from utils import find_nearest_hit, scan_voxels_for_hits, sort_tracks
 from data_formatter import DataFormatter
 from voxels import Voxels
 
@@ -20,12 +14,13 @@ print("\n", end="")
 ## Load Data ##
 path_to_dataset = "../../Data/train_100_events/"
 event_path = "event000001052"
-model_name = "identity.keras"
+# model_name = "identity.keras"
+model_name = "3in_3out.keras"
 
 hits, cells, particles, truth = load_event(path_to_dataset + event_path)
 # true_tracks = np.load("../port_toy/all_tracks.npy")
 
-# TODO do the appropriate transform on truth["x", "y", "z"] and hits["x", "y", "z"]
+# TODO use the appropriate transform on truth["x", "y", "z"] and hits["x", "y", "z"]
 
 
 # Get the sorted tracks
@@ -39,18 +34,16 @@ hit_voxels = Voxels(hits, 200)
 
 ## Import Model ##
 model = load_model(model_name)
-# print(model.summary())
 
 ## Evaluate Predictions ##
 for i in range(3, max_len-1):
-    x, y = formatter.getInputOutput(true_tracks, i, i)
+    x, y = formatter.getInputOutput(true_tracks, i, i, 18)
     print("\nBatch size for predicting hit #%d:" % (i+1), x.shape[0])
     
     if (len(x) == 0): break
     print("Find predictions... ", end="")
     predicted = model.predict(x)
     print("done.")
-    # print("Finished predicting hits")
 
     print("Find closest hits... ", end="")
     predicted_hits = []
@@ -60,14 +53,12 @@ for i in range(3, max_len-1):
         if idx % percent == 0: print("\rFind closest hits... " + str(int(100*idx / total)) + "%", end="")
         hit = hit_voxels.findClosestPoint(*guess)
         predicted_hits.append(hit)
-    print("\rFind closest hits... 100% complete")
     predicted_hits = np.asarray(predicted_hits)
+    print("\rFind closest hits... 100% complete")
 
     true_ids = y[:,0]
     predicted_ids = predicted_hits[:,0]
-
     print("Unique ids predicted:", np.unique(predicted_ids).shape[0])
-
     found = np.equal(predicted_ids, true_ids)
     num_true_found = np.count_nonzero(found)
     num_true = len(true_ids)

@@ -56,9 +56,9 @@ class Voxels:
         high = window + 1
         neighboring_points = []
         while len(neighboring_points) == 0:
-            for ii in range(max(0,i-window), min(i+high,self.numBins+1)):
-                for jj in range(max(0,j-window), min(j+high,self.numBins+1)):
-                    for kk in range(max(0,k-window), min(k+high,self.numBins+1)):
+            for ii in range(max(0,i-window), min(i+high,self.numBins)):
+                for jj in range(max(0,j-window), min(j+high,self.numBins)):
+                    for kk in range(max(0,k-window), min(k+high,self.numBins)):
                         neighboring_points.extend(self.bins[ii][jj][kk])
             window += 1
             high = window + 1
