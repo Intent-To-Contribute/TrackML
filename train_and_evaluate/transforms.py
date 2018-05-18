@@ -70,14 +70,18 @@ def normalize(hits, replace=False):
 	z = hits.z.values
 	ss = StandardScaler()
 
+	column1 = 'x' if replace else '1_norm'
+	column2 = 'y' if replace else '2_norm'
+	column3 = 'z' if replace else '3_norm'
+
 	r = np.sqrt(x**2 + y**2 + z**2)
-	hits['1_norm'] = x/r
-	hits['2_norm'] = y/r
-	hits['3_norm'] = z/r
+	hits[column1] = x/r
+	hits[column2] = y/r
+	hits[column3] = z/r
 	hits['4_norm'] = r
 
-	hits[['1_norm', '2_norm', '3_norm', '4_norm']] = ss.fit_transform(hits[['1_norm', '2_norm', '3_norm', '4_norm']].values)
-	X = ss.fit_transform(hits[['1_norm', '2_norm', '3_norm', '4_norm']].values)
+	hits[[column1, column2, column3]] = ss.fit_transform(hits[[column1, column2, column3]].values)
+	X = ss.fit_transform(hits[[column1, column2, column3]].values)
 	return X
 
 
