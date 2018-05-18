@@ -1,4 +1,4 @@
-import sys, os, math
+import sys, os, math, pdb
 import numpy as np
 from trackml.dataset import load_event
 from trackml.score import score_event
@@ -6,6 +6,7 @@ from trackml.score import score_event
 from data_formatter import DataFormatter
 from voxels import Voxels
 from transforms import *
+import dataset_path
 
 import tensorflow as tensorflow
 import keras
@@ -13,8 +14,8 @@ from keras.models import load_model
 print("\n", end="")
 
 ## Load Data ##
-path_to_dataset = "../../Data/train_100_events/"
-event_path = "event000001052"
+path_to_dataset = dataset_path.get_path()
+event_path = "event000001003"
 # model_name = "identity.keras"
 # model_name = "3in_3out.keras"
 model_name = "dbscan_trans.keras"
@@ -30,7 +31,6 @@ dbscan_trans(hits, True)
 formatter = DataFormatter()
 true_tracks, hit_tracks, max_len = formatter.getSortedTracks(particles, truth, hits)
 print("Max length of a track:", max_len)
-
 
 ## Create Voxels ##
 hit_voxels = Voxels(hits, 200)
