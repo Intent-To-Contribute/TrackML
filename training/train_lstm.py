@@ -55,7 +55,7 @@ for event_id, hits, cells, particles, truth in load_dataset('../../Data/train_fu
         "dbscan_trans"  : [column_index['1_db'], column_index['3_db']],
         "spherical"     : [column_index['1_sph'], column_index['3_sph']],
         "cylindrical"   : [column_index['1_cyl'], column_index['3_cyl']],
-        "normalize"     : [column_index['1_norm'], column_index['4_norm']],
+        "normalize"     : [column_index['1_norm'], column_index['3_norm']],
         "standard"      : [column_index['1_ss'], column_index['3_ss']],
         "identity"      : [column_index['1_id'], column_index['3_id']]
     }
