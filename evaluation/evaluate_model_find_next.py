@@ -5,6 +5,7 @@ from trackml.score import score_event
 
 from data_formatter import DataFormatter
 from voxels import Voxels
+from transforms import *
 
 import tensorflow as tensorflow
 import keras
@@ -15,12 +16,14 @@ print("\n", end="")
 path_to_dataset = "../../Data/train_100_events/"
 event_path = "event000001052"
 # model_name = "identity.keras"
-model_name = "3in_3out.keras"
+# model_name = "3in_3out.keras"
+model_name = "dbscan_trans.keras"
 
 hits, cells, particles, truth = load_event(path_to_dataset + event_path)
-# true_tracks = np.load("../port_toy/all_tracks.npy")
 
 # TODO use the appropriate transform on truth["x", "y", "z"] and hits["x", "y", "z"]
+# identity(hits, True)
+dbscan_trans(hits, True)
 
 
 # Get the sorted tracks
@@ -37,7 +40,8 @@ model = load_model(model_name)
 
 ## Evaluate Predictions ##
 for i in range(3, max_len-1):
-    x, y = formatter.getInputOutput(true_tracks, i, i, 18)
+    # x, y = formatter.getInputOutput(true_tracks, 2, 4, i, i, 18)
+    x, y = formatter.getInputOutput(hit_tracks, 1, 3, i, i, 18)
     print("\nBatch size for predicting hit #%d:" % (i+1), x.shape[0])
     
     if (len(x) == 0): break
@@ -54,7 +58,7 @@ for i in range(3, max_len-1):
         hit = hit_voxels.findClosestPoint(*guess)
         predicted_hits.append(hit)
     predicted_hits = np.asarray(predicted_hits)
-    print("\rFind closest hits... 100% complete")
+    print("\rFind closest hits... done")
 
     true_ids = y[:,0]
     predicted_ids = predicted_hits[:,0]

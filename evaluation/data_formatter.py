@@ -9,6 +9,7 @@ class DataFormatter:
     def getSortedTracks(self, particles, truth, hits, eventID=None):
         true_tracks = []
         hit_tracks = []
+
         sorted_truth = truth.sort_values("particle_id")
         np_hits = np.asarray(hits)
         np_particles = np.asarray(particles)
@@ -33,21 +34,22 @@ class DataFormatter:
             true_track = np.append(np_true_track, dists, axis=1)
             true_track = true_track[true_track[:,9].argsort()]
             true_tracks.append(true_track)
-            hit_track = [np_hits[np_hits[:,0] == true_hit[0]] for true_hit in true_track]
+            hit_track = [np.squeeze(np_hits[np_hits[:,0] == true_hit[0]]) for true_hit in true_track]
             hit_tracks.append(np.asarray(hit_track))
 
-        print("\rSort tracks... 100%", end="")
+        print("\rSort tracks... done", end="")
         print("\n", end="")
+
         return true_tracks, hit_tracks, max_len
 
-    def getInputOutput(self, tracks, minLength=-sys.maxsize, maxLength=sys.maxsize, paddingLength=None):
+    def getInputOutput(self, tracks, xIndex, yIndex, minLength=-sys.maxsize, maxLength=sys.maxsize, paddingLength=None):
         x = []
         y = []
         for track in tracks:
             for i in range(max(1, minLength), min(len(track)-1, maxLength+1)):
                 x_hit = np.zeros((0, 3))
                 for z in range(i):
-                    hit_to_add = np.asarray(track[z][2:5]).reshape(1,3)
+                    hit_to_add = np.asarray(track[z][xIndex:yIndex+1]).reshape(1,3)
                     x_hit = np.concatenate((x_hit, hit_to_add))
                 x.append(x_hit)
                 y.append(track[i+1])
