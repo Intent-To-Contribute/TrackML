@@ -15,16 +15,18 @@ print("\n", end="")
 
 ## Load Data ##
 path_to_dataset = dataset_path.get_path()
-event_path = "event000001003"
+event_path = "event000001002"
 # model_name = "identity.keras"
 # model_name = "3in_3out.keras"
-model_name = "dbscan_trans.keras"
+# model_name = "dbscan_trans.keras"
+model_name = "normalize.keras"
 
 hits, cells, particles, truth = load_event(path_to_dataset + event_path)
 
 # TODO use the appropriate transform on truth["x", "y", "z"] and hits["x", "y", "z"]
 # identity(hits, True)
-dbscan_trans(hits, True)
+# dbscan_trans(hits, True)
+normalize(hits, True)
 
 
 # Get the sorted tracks

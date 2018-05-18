@@ -52,7 +52,7 @@ class DataFormatter:
                     hit_to_add = np.asarray(track[z][xIndex:yIndex+1]).reshape(1,3)
                     x_hit = np.concatenate((x_hit, hit_to_add))
                 x.append(x_hit)
-                y.append(track[i+1])
+                y.append(track[i+1][xIndex:yIndex+1])
         
         if (len(x) == 0): return np.empty(0), np.empty(0)
         from keras.preprocessing.sequence import pad_sequences
