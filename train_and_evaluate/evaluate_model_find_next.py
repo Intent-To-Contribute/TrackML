@@ -19,7 +19,8 @@ event_path = "event000001002"
 # model_name = "identity.keras"
 # model_name = "3in_3out.keras"
 # model_name = "dbscan_trans.keras"
-model_name = "normalize.keras"
+# model_name = "normalize.keras"
+model_name = input("enter model to evaluate:")
 
 hits, cells, particles, truth = load_event(path_to_dataset + event_path)
 
@@ -43,7 +44,7 @@ model = load_model(model_name)
 ## Evaluate Predictions ##
 for i in range(3, max_len-1):
     # x, y = formatter.getInputOutput(true_tracks, 2, 4, i, i, 18)
-    x, y = formatter.getInputOutput(hit_tracks, 1, 3, i, i, 18)
+    x, y, y_ids = formatter.getInputOutput(hit_tracks, 1, 3, i, i, 18)
     print("\nBatch size for predicting hit #%d:" % (i+1), x.shape[0])
     
     if (len(x) == 0): break
@@ -61,12 +62,25 @@ for i in range(3, max_len-1):
         predicted_hits.append(hit)
     predicted_hits = np.asarray(predicted_hits)
     print("\rFind closest hits... done")
-
-    true_ids = y[:,0]
+ 
     predicted_ids = predicted_hits[:,0]
     print("Unique ids predicted:", np.unique(predicted_ids).shape[0])
-    found = np.equal(predicted_ids, true_ids)
+    found = np.equal(predicted_ids, y_ids)
     num_true_found = np.count_nonzero(found)
-    num_true = len(true_ids)
+    num_true = len(y_ids)
     print("%.4f%% correctly predicted for hit #%d" % (100*num_true_found / num_true, i+1))
 
+    np_hits = np.asarray(hits)
+    neighborhood_densities = []
+    for idx, predicted_xyz in enumerate(predicted):
+        #pdb.set_trace()
+        actual_hit = y[idx]
+        dist = np.linalg.norm(np.asarray(predicted_xyz) - np.asarray(actual_hit))
+        print("predicted point", predicted_xyz)
+        print("actual hit", actual_hit)
+        print("dist", dist)
+        print("#hits w/in dist: ", hit_voxels.getNumSurrounding(dist, *predicted_xyz))
+        neighborhood_densities.append(hit_voxels.getNumSurrounding(dist, *predicted_xyz))
+        print("\n")
+
+    print(neighborhood_densities)

@@ -1,6 +1,7 @@
 import sys, math
 import numpy as np
 from trackml.dataset import load_event
+from dataset_path import get_path
 
 class Voxels:
     def __init__(self, points, numBins=100):
@@ -69,15 +70,7 @@ class Voxels:
         neighboring_points = np.asarray(neighboring_points)
         distances = np.sqrt((x-neighboring_points[:,1])**2 + (y-neighboring_points[:,2])**2 + (z-neighboring_points[:,3])**2)
         min_idx = np.argmin(distances)
-        # for point in neighboring_points:
-            # dist = math.sqrt((x - point[1])**2 + (y - point[2])**2 + (z - point[3])**2)
-            # dist = math.sqrt((x - point.x)**2 + (y - point.y)**2 + (z - point.z)**2)
-            # if dist < min_dist:
-                # min_dist = dist
-                # closest_point = point
 
-        # print(neighboring_points[min_idx] == closest_point)
-        # return closest_point
         return neighboring_points[min_idx]
 
 
@@ -88,9 +81,35 @@ class Voxels:
                 maxBinCount = len(self.bins[idx[0]][idx[1]][idx[2]])
         return maxBinCount
 
+    def getNumSurrounding(self, r, x, y, z):
+        nhits = 0
+        rReached = False
+        i, j, k = self.getBinIndices(x, y, z)
+        i_window = int(r / (self.xRange / self.numBins))+1
+        j_window = int(r / (self.yRange / self.numBins))+1
+        k_window = int(r / (self.zRange / self.numBins))+1
+        possible_points = []
+        for ii in range(max(0,i-i_window), min(i+i_window+1,self.numBins)):
+            for jj in range(max(0,j-j_window), min(j+j_window+1,self.numBins)):
+                for kk in range(max(0,k-k_window), min(k+k_window+1,self.numBins)):
+                    possible_points.extend(self.bins[ii][jj][kk])
+
+        if (len(possible_points) == 0):
+            return 0
+
+        point = np.asarray([x, y, z])
+        possible_points = np.asarray(possible_points)
+        diff = point - possible_points[:,1:4]
+        square = np.square(diff)
+        sum_of_squares = np.sum(square, axis=1)
+        bool_array = np.sqrt(sum_of_squares) < r
+
+        return np.sum(bool_array)
+
+
 # test
 if __name__ == "__main__":
-    path_to_dataset = "../../Data/train_100_events/"
+    path_to_dataset = get_path()
     event_path = "event000001052"
     hits, cells, particles, truth = load_event(path_to_dataset + event_path)
 
@@ -98,6 +117,14 @@ if __name__ == "__main__":
 
     print(hit_voxels.getMaxBinCount())
 
-    for i in range(100):
-        print("closest point to ", hits.x.values[i], hits.y.values[i], hits.z.values[i])
-        print(hit_voxels.findClosestPoint(hits.x.values[i], hits.y.values[i], hits.z.values[i]))
+    #for i in range(100):
+    #    print("closest point to ", hits.x.values[i], hits.y.values[i], hits.z.values[i])
+    #    print(hit_voxels.findClosestPoint(hits.x.values[i], hits.y.values[i], hits.z.values[i]))
+
+    print("number of points < 50 away from the origin -- test method()", hit_voxels.getNumSurrounding(50, 0, 0, 0))
+
+
+    dists = (np.linalg.norm(hits[['x','y','z']].values, axis=1))
+
+    print("number of points < 50 away from origin -- verify", np.sum(dists < 50))
+    print("min dist", np.amin(dists))

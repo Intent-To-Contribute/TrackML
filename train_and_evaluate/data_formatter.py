@@ -45,6 +45,7 @@ class DataFormatter:
     def getInputOutput(self, tracks, xIndex, yIndex, minLength=-sys.maxsize, maxLength=sys.maxsize, paddingLength=None):
         x = []
         y = []
+        y_ids = []
         for track in tracks:
             for i in range(max(1, minLength), min(len(track)-1, maxLength+1)):
                 x_hit = np.zeros((0, 3))
@@ -52,6 +53,7 @@ class DataFormatter:
                     hit_to_add = np.asarray(track[z][xIndex:yIndex+1]).reshape(1,3)
                     x_hit = np.concatenate((x_hit, hit_to_add))
                 x.append(x_hit)
+                y_ids.append(track[i+1][0])
                 y.append(track[i+1][xIndex:yIndex+1])
         
         if (len(x) == 0): return np.empty(0), np.empty(0)
@@ -59,7 +61,7 @@ class DataFormatter:
         x = pad_sequences(x, maxlen=paddingLength, dtype=np.float64)
         y = np.asarray(y)
 
-        return x, y
+        return x, y, y_ids
 
 
 # test

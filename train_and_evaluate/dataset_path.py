@@ -1,2 +1,2 @@
 def get_path():
-    return "../../Data/train_100_events/"
+    return "../../Data/train_full/"

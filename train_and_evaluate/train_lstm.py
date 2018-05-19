@@ -38,6 +38,8 @@ num_epochs = int(num_epochs)
 seq_len = input("Input the sequence length you want to train: ")
 seq_len = int(seq_len)
 
+batch_size = input("Input the batch size you want: ")
+batch_size = int(batch_size)
 
 formatter = DataFormatter()
 
@@ -53,8 +55,8 @@ out_neurons = tuple_len
 hidden_neurons = 500
 
 # load the model if it exists
-if os.path.exists(transformations[transformation_idx] + ".keras"):
-    model = load_model(transformations[transformation_idx] + ".keras")
+if os.path.exists(transformations[transformation_idx] + str(seq_len) + ".keras"):
+    model = load_model(transformations[transformation_idx] + str(seq_len) + ".keras")
 else:
     model = Sequential()
     model.add(LSTM(hidden_neurons, return_sequences=False, input_shape=(None, in_neurons)))
@@ -80,7 +82,7 @@ for event_id, hits, cells, particles, truth in load_dataset(dataset_path.get_pat
 
     ## Train the LSTM model ##
     print("Training with the", transformations[transformation_idx], "tranformation")
-    model.fit(x, y, batch_size=2000, epochs=num_epochs, validation_split=0)
+    model.fit(x, y, batch_size=batch_size, epochs=num_epochs, validation_split=0)
     model.save(transformations[transformation_idx] + str(seq_len) +  ".keras")
 
 
